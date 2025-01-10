@@ -122,7 +122,7 @@ $soldiers = mysqli_query($link, "SELECT s.*, r.rotation, t.training_unit
 </head>
 <body>
     <header>
-        <h1>Military Management System</h1>
+        <h1>Military</h1>
     </header>
     <main>
         <!-- Form เพิ่ม Rotation -->
