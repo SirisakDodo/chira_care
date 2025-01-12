@@ -5,17 +5,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user = $_POST['username']; // รับค่าจากฟอร์ม
     $pass = $_POST['password'];
 
-    // สร้าง SQL query
-    $sql = "SELECT * FROM admin WHERE username = '$user' AND password = '$pass'"; // ใช้ SQL query แบบปกติ
-
     // ตรวจสอบการเชื่อมต่อกับฐานข้อมูล
     if ($link) {
-        $result = $link->query($sql); // ใช้ query แบบปกติ
+        // ใช้ Prepared Statements เพื่อความปลอดภัย
+        $stmt = $link->prepare("SELECT * FROM admin WHERE username = ? UNION SELECT * FROM opduser WHERE user_opd = ? UNION SELECT * FROM eruser WHERE user_er = ?");
+        $stmt->bind_param("sss", $user, $user , $user);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
             // ตรวจสอบรหัสผ่าน
-            if ($pass == $row['password']) {
+            if ($pass === $row['password']) {
                 header("Location: index.php");
                 exit;
             } else {
