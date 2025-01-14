@@ -1,0 +1,164 @@
+.form-container {
+    margin-top: 20px;
+}
+
+.form-container .card {
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    /* Adjusted for better spacing */
+    gap: 20px;
+}
+
+.form-col {
+    flex: 1;
+    max-width: 48%;
+    /* Ensures equal width for forms */
+}
+
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    /* Improved table appearance */
+}
+
+table th,
+table td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.table-container {
+    display: flex;
+    justify-content: space-between;
+    /* Ensures tables are spaced evenly */
+    gap: 20px;
+    /* Adds gap between the two tables */
+}
+
+.table-card {
+    width: 48%;
+    /* Ensures equal width for both tables */
+    box-sizing: border-box;
+    /* Prevents any content from overflowing */
+}
+
+.table-container .table-card table {
+    width: 100%;
+    /* Ensures the table inside the card fills its container */
+}
+
+.form-section {
+    margin-bottom: 1.5rem;
+}
+
+.form-section label {
+    font-weight: bold;
+}
+
+
+.content-wrapper {
+    padding-top: 20px;
+    /* Adjust as needed to create more space from the navbar */
+}
+
+h1.mb-4 {
+    margin-top: 20px;
+    /* Additional margin for spacing */
+}
+
+.swal2-confirm-red {
+    background-color: #dc3545 !important;
+    /* สีแดง */
+    color: white !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ปรับสไตล์ของปุ่มยกเลิก (cancel button) */
+.swal2-cancel {
+    background-color: #28a745 !important;
+    /* สีเขียว */
+    color: white !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ปรับสไตล์ของไอคอน */
+.swal2-icon {
+    border-color: #dc3545 !important;
+    /* สีแดง */
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #007bff;
+    color: white;
+    border-radius: 10px 10px 0 0;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.list-group-item {
+    font-size: 16px;
+}
+
+.list-group-item span {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.profile-card {
+    max-width: 400px;
+    margin: 0 auto;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+    text-align: center;
+    font-family: 'Source Sans Pro', sans-serif;
+}
+
+.profile-card .header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 20px;
+}
+
+.profile-card .header img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+}
+
+.profile-card .content {
+    padding: 20px;
+}
+
+.profile-card .content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile-card .content ul li {
+    margin: 10px 0;
+    font-size: 14px;
+    text-align: left;
+}
+
+.profile-card .content ul li b {
+    color: #007bff;
+}

@@ -1,0 +1,21 @@
+/* Custom Styles */
+body {
+    background-color: #f4f6f9;
+    /* กำหนดสีพื้นหลัง */
+}
+
+h1 {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+}
+
+.btn-primary {
+    background-color: #000000;
+    /* เปลี่ยนสีพื้นหลังของปุ่ม */
+    border-color: #000000;
+}
+
+.sidebar-dark-primary .nav-sidebar .nav-link.active {
+    background-color: #007bff;
+}
