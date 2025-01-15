@@ -13,12 +13,18 @@ $sql = "SELECT
         FROM
             Soldier s
         INNER JOIN
-            Rotation r ON s.rotation_id = r.id
+            Rotation r ON s.rotation_id = r.rotation_id  -- Updated with correct field
         INNER JOIN
-            Training t ON s.training_unit_id = t.id";
+            Training t ON s.training_unit_id = t.training_unit_id";
 
 // ดำเนินการคำสั่ง SQL
 $result = mysqli_query($link, $sql);
+
+// ตรวจสอบผลลัพธ์ของการ query
+if (!$result) {
+    die("Query failed: " . mysqli_error($link)); // Output error message if query fails
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -139,12 +145,6 @@ $result = mysqli_query($link, $sql);
       echo "ไม่พบไฟล์ Footer.";
   }
   ?>
-      </div>
-    </section>
-  </div>
-
-
-
 </div>
 
 <script>

@@ -4,6 +4,7 @@ require_once '../config/database.php';
 $soldierId = $_GET['id'] ?? '';
 
 if ($soldierId) {
+    // Corrected query for Soldier using soldier_id_card
     $sql = "SELECT * FROM Soldier WHERE soldier_id_card = ?";
     $stmt = mysqli_prepare($link, $sql);
     mysqli_stmt_bind_param($stmt, "s", $soldierId);
@@ -97,7 +98,7 @@ $resultTraining = mysqli_query($link, $sqlTraining);
                 <label>ผลัด:</label>
                 <select name="rotation_id" class="form-control">
                   <?php while ($rotation = mysqli_fetch_assoc($resultRotation)): ?>
-                    <option value="<?php echo $rotation['id']; ?>" <?php echo $soldier['rotation_id'] == $rotation['id'] ? 'selected' : ''; ?>>
+                    <option value="<?php echo $rotation['rotation_id']; ?>" <?php echo $soldier['rotation_id'] == $rotation['rotation_id'] ? 'selected' : ''; ?>>
                       <?php echo htmlspecialchars($rotation['rotation']); ?>
                     </option>
                   <?php endwhile; ?>
@@ -109,7 +110,7 @@ $resultTraining = mysqli_query($link, $sqlTraining);
                 <label>หน่วยฝึก:</label>
                 <select name="training_unit_id" class="form-control">
                   <?php while ($training = mysqli_fetch_assoc($resultTraining)): ?>
-                    <option value="<?php echo $training['id']; ?>" <?php echo $soldier['training_unit_id'] == $training['id'] ? 'selected' : ''; ?>>
+                    <option value="<?php echo $training['training_unit_id']; ?>" <?php echo $soldier['training_unit_id'] == $training['training_unit_id'] ? 'selected' : ''; ?>>
                       <?php echo htmlspecialchars($training['training_unit']); ?>
                     </option>
                   <?php endwhile; ?>

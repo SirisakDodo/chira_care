@@ -2,8 +2,8 @@
 require_once '../config/database.php';
 
 // Fetch Rotation and Training options
-$rotationResult = mysqli_query($link, "SELECT id, rotation FROM Rotation");
-$trainingResult = mysqli_query($link, "SELECT id, training_unit FROM Training");
+$rotationResult = mysqli_query($link, "SELECT rotation_id, rotation FROM Rotation");
+$trainingResult = mysqli_query($link, "SELECT training_unit_id, training_unit FROM Training");
 
 // Handle Soldier Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_soldier'])) {
@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_soldier'])) {
     $selection_method = mysqli_real_escape_string($link, $_POST['selection_method']);
     $service_duration = intval($_POST['service_duration']);
 
+    // Insert Soldier into the database
     $sql = "INSERT INTO Soldier (soldier_id_card, first_name, last_name, rotation_id, training_unit_id, affiliated_unit, weight_kg, height_cm, medical_allergy_food_history, underlying_diseases, selection_method, service_duration)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($link, $sql);
@@ -88,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_soldier'])) {
                                     <?php
                                     if (mysqli_num_rows($rotationResult) > 0) {
                                         while ($row = mysqli_fetch_assoc($rotationResult)) {
-                                            echo "<option value='" . $row['id'] . "'>" . $row['rotation'] . "</option>";
+                                            echo "<option value='" . $row['rotation_id'] . "'>" . $row['rotation'] . "</option>";
                                         }
                                     } else {
                                         echo "<option value=''>ไม่มีข้อมูลรุ่น</option>";
@@ -103,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_soldier'])) {
                                     <?php
                                     if (mysqli_num_rows($trainingResult) > 0) {
                                         while ($row = mysqli_fetch_assoc($trainingResult)) {
-                                            echo "<option value='" . $row['id'] . "'>" . $row['training_unit'] . "</option>";
+                                            echo "<option value='" . $row['training_unit_id'] . "'>" . $row['training_unit'] . "</option>";
                                         }
                                     } else {
                                         echo "<option value=''>ไม่มีข้อมูลหน่วยฝึก</option>";
@@ -171,6 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_soldier'])) {
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 </body>
 </html>

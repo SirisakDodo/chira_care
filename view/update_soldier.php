@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // เตรียมคำสั่ง SQL
     $stmt = mysqli_prepare($link, $sqlUpdate);
-    mysqli_stmt_bind_param($stmt, "ssiiissssssbs",
+    mysqli_stmt_bind_param($stmt, "ssiiissssssss",
         $firstName,
         $lastName,
         $rotationId,

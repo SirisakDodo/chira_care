@@ -133,7 +133,7 @@ $trainingResult = mysqli_query($link, $trainingQuery);
                                 <td>
                                   <?php echo htmlspecialchars($row['rotation']); ?>
                                   <form method="POST" action="" style="display:inline-block; float:right;">
-                                    <input type="hidden" name="rotation_id" value="<?php echo $row['id']; ?>">
+                                    <input type="hidden" name="rotation_id" value="<?php echo $row['rotation_id']; ?>">
                                     <button type="submit" name="delete_rotation" class="btn btn-danger btn-sm">ลบ</button>
                                   </form>
                                 </td>
@@ -164,7 +164,7 @@ $trainingResult = mysqli_query($link, $trainingQuery);
                                 <td>
                                   <?php echo htmlspecialchars($row['training_unit']); ?>
                                   <form method="POST" action="" style="display:inline-block; float:right;">
-                                    <input type="hidden" name="training_id" value="<?php echo $row['id']; ?>">
+                                    <input type="hidden" name="training_id" value="<?php echo $row['training_unit_id']; ?>">
                                     <button type="submit" name="delete_training" class="btn btn-danger btn-sm">ลบ</button>
                                   </form>
                                 </td>

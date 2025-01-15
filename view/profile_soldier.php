@@ -11,8 +11,8 @@ if ($soldierId) {
                 t.training_unit AS training_unit_name
             FROM
                 Soldier s
-            LEFT JOIN Rotation r ON s.rotation_id = r.id
-            LEFT JOIN Training t ON s.training_unit_id = t.id
+            LEFT JOIN Rotation r ON s.rotation_id = r.rotation_id
+            LEFT JOIN Training t ON s.training_unit_id = t.training_unit_id
             WHERE s.soldier_id_card = ?";
 
     $stmt = mysqli_prepare($link, $sql);
@@ -71,7 +71,7 @@ if ($soldierId) {
           <li><b>วิธีการคัดเลือก:</b> <?php echo htmlspecialchars($soldier['selection_method'] ?? 'ไม่มีข้อมูล'); ?></li>
           <li><b>ระยะเวลาการฝึก:</b> <?php echo htmlspecialchars($soldier['service_duration'] ?? 'ไม่มีข้อมูล'); ?> เดือน</li>
           <li><b>โรคประจำตัว:</b> <?php echo htmlspecialchars($soldier['underlying_diseases'] ?? '-'); ?></li>
-          <li><b>ประวัติแพ้ยา/แพ้อาหาร:</b> <?php echo htmlspecialchars($soldier['allergy_history'] ?? '-'); ?></li>
+          <li><b>ประวัติแพ้ยา/แพ้อาหาร:</b> <?php echo htmlspecialchars($soldier['medical_allergy_food_history'] ?? '-'); ?></li>
           <li><b>น้ำหนัก:</b> <?php echo htmlspecialchars($soldier['weight_kg'] ?? '-'); ?> กก.</li>
           <li><b>ส่วนสูง:</b> <?php echo htmlspecialchars($soldier['height_cm'] ?? '-'); ?> ซม.</li>
         </ul>
