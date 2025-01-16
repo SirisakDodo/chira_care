@@ -1,11 +1,19 @@
 <?php
 require_once '../config/database.php';  // Include database connection
+session_start(); // เริ่มต้นเซสชัน
 
-// Fetch training units
-$training_query = "SELECT training_unit_id, training_unit FROM training";
-$training_result = mysqli_query($link, $training_query);
+// ตรวจสอบการล็อกอิน
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit();
+}
 
+// ดึงข้อมูลจากเซสชัน
+$user = $_SESSION['user'];
+$training_unit_id = $user['training_unit_id'];
+$training_unit = $user['training_unit'];
 
+// ตรวจสอบว่าแบบฟอร์มถูกส่งมาไหม
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $soldier_id = $_POST['soldier_id'];
     $symptom_description = $_POST['symptom_description'];
@@ -25,15 +33,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $symptom_image = file_get_contents($_FILES['symptom_image']['tmp_name']);
     }
 
+    // บันทึกข้อมูลลงฐานข้อมูล
     $query = "INSERT INTO medicalreport
               (soldier_id, symptom_description, vital_signs_temperature, vital_signs_blood_pressure,
-               vital_signs_heart_rate, pain_score, atk_test_result, symptom_image, status)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+               vital_signs_heart_rate, pain_score, atk_test_result, symptom_image)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = mysqli_prepare($link, $query);
-    mysqli_stmt_bind_param($stmt, "isdsisiis", $soldier_id, $symptom_description, $vital_signs_temperature,
+    mysqli_stmt_bind_param($stmt, "isdsisis", $soldier_id, $symptom_description, $vital_signs_temperature,
                           $vital_signs_blood_pressure, $vital_signs_heart_rate, $pain_score,
-                          $atk_test_result, $symptom_image, $status);
+                          $atk_test_result, $symptom_image);
 
     if (mysqli_stmt_execute($stmt)) {
         echo "บันทึกข้อมูลสำเร็จ";
@@ -44,7 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     mysqli_stmt_close($stmt);
 }
 ?>
-?>
 
 <!DOCTYPE html>
 <html lang="th">
@@ -54,38 +62,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Medical Report Form</title>
     <script>
         function fetchSoldiers() {
-            var trainingUnitId = document.getElementById("training_unit").value;
-            if (trainingUnitId) {
-                var xhr = new XMLHttpRequest();
-                xhr.open("GET", "get_soldiers.php?training_unit_id=" + trainingUnitId, true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        document.getElementById("soldier_id").innerHTML = xhr.responseText;
-                    }
-                };
-                xhr.send();
-            } else {
-                document.getElementById("soldier_id").innerHTML = '<option value="">Select training unit first</option>';
-            }
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "get_soldiers.php?training_unit_id=<?php echo $training_unit_id; ?>", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    document.getElementById("soldier_id").innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
         }
+
+        // โหลดทหารทันทีเมื่อหน้าโหลดเสร็จ
+        window.onload = fetchSoldiers;
     </script>
 </head>
 <body>
     <h1>บันทึกรายงานทางการแพทย์</h1>
     <form action="insert_medicalreport.php" method="post" enctype="multipart/form-data">
-        <label for="training_unit">หน่วยฝึก:</label><br>
-        <select id="training_unit" name="training_unit" onchange="fetchSoldiers()" required>
-            <option value="">-- เลือกหน่วยฝึก --</option>
-            <?php while ($row = mysqli_fetch_assoc($training_result)) { ?>
-                <option value="<?php echo $row['training_unit_id']; ?>"><?php echo $row['training_unit']; ?></option>
-            <?php } ?>
-        </select><br><br>
+        <!-- แสดงหน่วยฝึก -->
+        <label>หน่วยฝึก:</label><br>
+        <input type="text" value="<?php echo $training_unit; ?>" disabled>
+        <input type="hidden" name="training_unit_id" value="<?php echo $training_unit_id; ?>"><br><br>
 
+        <!-- ทหาร -->
         <label for="soldier_id">เลือกทหาร:</label><br>
         <select id="soldier_id" name="soldier_id" required>
-            <option value="">-- กรุณาเลือกหน่วยฝึกก่อน --</option>
+            <option value="">-- กำลังโหลดทหาร --</option>
         </select><br><br>
 
+        <!-- ข้อมูลทางการแพทย์ -->
         <label for="symptom_description">คำอธิบายอาการ:</label><br>
         <textarea id="symptom_description" name="symptom_description"></textarea><br><br>
 
@@ -102,12 +107,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="number" id="pain_score" name="pain_score" min="0" max="10"><br><br>
 
         <label for="atk_test_result">ผลการทดสอบ X-ray:</label><br>
-        <input type="file" id="xray_test_result" name="atk_test_result"><br><br>
+        <input type="file" id="atk_test_result" name="atk_test_result"><br><br>
 
         <label for="symptom_image">รูปภาพอาการ:</label><br>
         <input type="file" id="symptom_image" name="symptom_image"><br><br>
 
         <button type="submit">บันทึกข้อมูล</button>
+        <a href="logout.php">ออกจากระบบ</a>
     </form>
 </body>
 </html>

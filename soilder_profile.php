@@ -21,3 +21,4 @@ $user = $_SESSION['user'];
     <a href="logout.php">ออกจากระบบ</a>
 </body>
 </html>
+    
