@@ -5,30 +5,48 @@ require_once '../config/database.php';
 $rotationResult = mysqli_query($link, "SELECT rotation_id, rotation FROM Rotation");
 $trainingResult = mysqli_query($link, "SELECT training_unit_id, training_unit FROM Training");
 
-// Handle Soldier Form Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_soldier'])) {
+    // รับค่าจากฟอร์ม
     $soldier_id_card = mysqli_real_escape_string($link, $_POST['soldier_id_card']);
     $first_name = mysqli_real_escape_string($link, $_POST['first_name']);
     $last_name = mysqli_real_escape_string($link, $_POST['last_name']);
     $rotation_id = intval($_POST['rotation_id']);
     $training_unit_id = intval($_POST['training_unit_id']);
-    $affiliated_unit = mysqli_real_escape_string($link, $_POST['affiliated_unit']);
+    $affiliated_unit = !empty($_POST['affiliated_unit']) ? mysqli_real_escape_string($link, $_POST['affiliated_unit']) : NULL;
     $weight_kg = floatval($_POST['weight_kg']);
     $height_cm = intval($_POST['height_cm']);
-    $medical_allergy_food_history = mysqli_real_escape_string($link, $_POST['medical_allergy_food_history']);
-    $underlying_diseases = mysqli_real_escape_string($link, $_POST['underlying_diseases']);
+    $medical_allergy_food_history = !empty($_POST['medical_allergy_food_history']) ? mysqli_real_escape_string($link, $_POST['medical_allergy_food_history']) : NULL;
+    $underlying_diseases = !empty($_POST['underlying_diseases']) ? mysqli_real_escape_string($link, $_POST['underlying_diseases']) : NULL;
     $selection_method = mysqli_real_escape_string($link, $_POST['selection_method']);
     $service_duration = intval($_POST['service_duration']);
 
-    // Insert Soldier into the database
+    // SQL Command
     $sql = "INSERT INTO Soldier (soldier_id_card, first_name, last_name, rotation_id, training_unit_id, affiliated_unit, weight_kg, height_cm, medical_allergy_food_history, underlying_diseases, selection_method, service_duration)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($link, $sql);
-    mysqli_stmt_bind_param($stmt, "sssiiisidssi", $soldier_id_card, $first_name, $last_name, $rotation_id, $training_unit_id, $affiliated_unit, $weight_kg, $height_cm, $medical_allergy_food_history, $underlying_diseases, $selection_method, $service_duration);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
+    if (!$stmt) {
+        die("Prepare failed: " . mysqli_error($link));
+    }
+
+    // ตรวจสอบจำนวนตัวแปรที่ส่งไปใน bind_param ให้ตรงกับจำนวน placeholders "?"
+    $types = "sssiissssssi"; // ชนิดข้อมูล
+    if (!mysqli_stmt_bind_param($stmt, $types, 
+        $soldier_id_card, $first_name, $last_name, $rotation_id, $training_unit_id, 
+        $affiliated_unit, $weight_kg, $height_cm, $medical_allergy_food_history, 
+        $underlying_diseases, $selection_method, $service_duration)) {
+        die("Bind failed: " . mysqli_stmt_error($stmt));
+    }
+
+    // Execute the statement
+    if (!mysqli_stmt_execute($stmt)) {
+        die("Execute failed: " . mysqli_stmt_error($stmt));
+    }
+
+    echo "Data inserted successfully!";
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="th">
