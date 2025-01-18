@@ -4,7 +4,7 @@ require_once '../config/database.php';  // รวมการเชื่อม�
 // ตรวจสอบการรับค่าจาก URL
 if (isset($_GET['training_unit_id']) && is_numeric($_GET['training_unit_id'])) {
     $training_unit_id = intval($_GET['training_unit_id']);
-    
+
     // สร้างคำสั่ง SQL ดึงข้อมูลทหารจากหน่วยฝึกที่ระบุ
     $soldiers_query = "SELECT soldier_id, CONCAT(first_name, ' ', last_name) AS full_name FROM soldier WHERE training_unit_id = ?";
     $stmt = mysqli_prepare($link, $soldiers_query);
