@@ -1,7 +1,7 @@
 <?php
 require_once '../config/database.php';
 
-// รับ ID ทหารจาก GET
+// Receive soldier ID from GET
 $soldierId = $_GET['id'] ?? '';
 
 if ($soldierId) {
@@ -37,50 +37,172 @@ if ($soldierId) {
 ?>
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ข้อมูลทหาร</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ข้อมูลทหาร</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <style>
+        .profile-card-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <link rel="stylesheet" href="../css/proflie.css">
+        .profile-card {
+            display: flex;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f5f5f5;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-details {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .profile-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .profile-column {
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .profile-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* ชื่อ-นามสกุลขนาดใหญ่ */
+        .name-column {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #333;
+        }
+
+        .profile-image {
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .profile-image img {
+            width: 150px;
+            height: 150px;
+            border-radius: 5px;
+            border: 2px solid #555;
+            object-fit: cover;
+        }
+
+        .btn-center {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .btn {
+            padding: 8px 15px;
+        }
+    </style>
 </head>
+
 <body class="hold-transition sidebar-mini layout-fixed">
-<div class="wrapper">
-  <?php include '../components/nav_bar.php'; ?>
-  <?php include '../components/sidebar.php'; ?>
+    <div class="wrapper">
+        <?php include '../components/nav_bar.php'; ?>
+        <?php include '../components/sidebar.php'; ?>
 
-  <div class="content-wrapper">
-    <div class="profile-card">
-      <!-- Image Section -->
-      <div class="profile-image">
-        <?php if (!empty($soldier['soldier_image'])): ?>
-          <img src="data:image/jpeg;base64,<?php echo base64_encode($soldier['soldier_image']); ?>" alt="Soldier Image">
-        <?php else: ?>
-          <p>ไม่มีรูปภาพ</p>
-        <?php endif; ?>
-      </div>
+        <div class="content-wrapper">
+            <div class="profile-card-container">
+                <div class="profile-card">
+                    <!-- Soldier Details -->
+                    <div class="profile-details">
+                        <div class="profile-row">
+                            <div class="profile-column name-column">
+                                <?php echo htmlspecialchars($soldier['first_name'] . ' ' . $soldier['last_name']); ?>
+                            </div>
+                            <div class="profile-column">
+                                <span class="profile-label">วิธีการคัดเลือก:</span>
+                                <?php echo htmlspecialchars($soldier['selection_method'] ?? 'ไม่มีข้อมูล'); ?>
+                            </div>
+                            <div class="profile-column">
+                                <span class="profile-label">ผลัด:</span>
+                                <?php echo htmlspecialchars($soldier['rotation_name'] ?? 'ไม่มีข้อมูล'); ?>
+                            </div>
+                        </div>
 
-      <!-- Details Section -->
-      <div class="profile-details">
-        <h4><?php echo htmlspecialchars($soldier['first_name'] . ' ' . $soldier['last_name']); ?></h4>
-        <ul>
-          <li><b>เลขประจำตัวประชาชน:</b> <?php echo htmlspecialchars($soldier['soldier_id_card']); ?></li>
-          <li><b>หน่วยฝึก:</b> <?php echo htmlspecialchars($soldier['training_unit_name'] ?? 'ไม่มีข้อมูล'); ?></li>
-          <li><b>ผลัด:</b> <?php echo htmlspecialchars($soldier['rotation_name'] ?? 'ไม่มีข้อมูล'); ?></li>
-          <li><b>วิธีการคัดเลือก:</b> <?php echo htmlspecialchars($soldier['selection_method'] ?? 'ไม่มีข้อมูล'); ?></li>
-          <li><b>ระยะเวลาการฝึก:</b> <?php echo htmlspecialchars($soldier['service_duration'] ?? 'ไม่มีข้อมูล'); ?> เดือน</li>
-          <li><b>โรคประจำตัว:</b> <?php echo htmlspecialchars($soldier['underlying_diseases'] ?? '-'); ?></li>
-          <li><b>ประวัติแพ้ยา/แพ้อาหาร:</b> <?php echo htmlspecialchars($soldier['medical_allergy_food_history'] ?? '-'); ?></li>
-          <li><b>น้ำหนัก:</b> <?php echo htmlspecialchars($soldier['weight_kg'] ?? '-'); ?> กก.</li>
-          <li><b>ส่วนสูง:</b> <?php echo htmlspecialchars($soldier['height_cm'] ?? '-'); ?> ซม.</li>
-        </ul>
-        <div class="btn-center">
-          <a href="edit_soldier.php?id=<?php echo urlencode($soldier['soldier_id_card']); ?>" class="btn btn-primary">แก้ไขข้อมูล</a>
+                        <div class="profile-row">
+                            <div class="profile-column">
+                                <span class="profile-label">เลขประจำตัวประชาชน:</span>
+                                <?php echo htmlspecialchars($soldier['soldier_id_card']); ?>
+                            </div>
+                        </div>
+
+                        <div class="profile-row">
+                            <div class="profile-column">
+                                <span class="profile-label">หน่วยฝึก:</span>
+                                <?php echo htmlspecialchars($soldier['training_unit_name'] ?? 'ไม่มีข้อมูล'); ?>
+                            </div>
+                            <div class="profile-column">
+                                <span class="profile-label">ระยะเวลาการฝึก:</span>
+                                <?php echo htmlspecialchars($soldier['service_duration'] ?? 'ไม่มีข้อมูล'); ?> เดือน
+                            </div>
+                        </div>
+
+                        <div class="profile-row">
+                            <div class="profile-column">
+                                <span class="profile-label">โรคประจำตัว:</span>
+                                <?php echo htmlspecialchars($soldier['underlying_diseases'] ?? '-'); ?>
+                            </div>
+                            <div class="profile-column">
+                                <span class="profile-label">ประวัติแพ้ยา/แพ้อาหาร:</span>
+                                <?php echo htmlspecialchars($soldier['medical_allergy_food_history'] ?? '-'); ?>
+                            </div>
+                        </div>
+
+                        <div class="profile-row">
+                            <div class="profile-column">
+                                <span class="profile-label">น้ำหนัก:</span>
+                                <?php echo htmlspecialchars($soldier['weight_kg'] ?? '-'); ?> กก.
+                            </div>
+                            <div class="profile-column">
+                                <span class="profile-label">ส่วนสูง:</span>
+                                <?php echo htmlspecialchars($soldier['height_cm'] ?? '-'); ?> ซม.
+                            </div>
+                            <div class="profile-column">
+                                <span class="profile-label">BMI:</span>
+                                <?php echo htmlspecialchars($bmi); ?>
+                            </div>
+                        </div>
+
+                        <div class="btn-center">
+                            <a href="edit_soldier.php?id=<?php echo urlencode($soldier['soldier_id_card']); ?>"
+                                class="btn btn-primary">แก้ไขข้อมูล</a>
+                        </div>
+                    </div>
+
+                    <!-- Soldier Image -->
+                    <div class="profile-image">
+                        <?php if (!empty($soldier['soldier_image'])): ?>
+                            <img src="data:image/jpeg;base64,<?php echo base64_encode($soldier['soldier_image']); ?>"
+                                alt="Soldier Image">
+                        <?php else: ?>
+                            <p>ไม่มีรูปภาพ</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-</div>
 </body>
+
 </html>

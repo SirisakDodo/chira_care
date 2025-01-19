@@ -5,6 +5,7 @@ session_start();
 // ตรวจสอบว่าได้เลือกกรองหรือยัง
 $rotation_filter = isset($_GET['rotation']) ? $_GET['rotation'] : '';
 $training_unit_filter = isset($_GET['training_unit']) ? $_GET['training_unit'] : '';
+$status_filter = isset($_GET['status']) ? $_GET['status'] : '';  // เพิ่มตัวแปรสำหรับกรองสถานะ
 
 // สร้างคำสั่ง SQL เพื่อดึงข้อมูลที่ตรงกับเงื่อนไขที่กรอง
 $query = "SELECT s.soldier_id, s.first_name, s.last_name, r.rotation AS rotation_name, t.training_unit AS training_unit_name,
@@ -14,7 +15,7 @@ $query = "SELECT s.soldier_id, s.first_name, s.last_name, r.rotation AS rotation
           JOIN soldier s ON mr.soldier_id = s.soldier_id
           LEFT JOIN rotation r ON s.rotation_id = r.rotation_id
           LEFT JOIN training t ON s.training_unit_id = t.training_unit_id
-          WHERE mr.status = 'sent'";
+          WHERE 1";
 
 if ($rotation_filter) {
     $query .= " AND r.rotation_id = '$rotation_filter'";
@@ -22,6 +23,10 @@ if ($rotation_filter) {
 
 if ($training_unit_filter) {
     $query .= " AND t.training_unit_id = '$training_unit_filter'";
+}
+
+if ($status_filter) {
+    $query .= " AND mr.status = '$status_filter'";
 }
 
 $result = mysqli_query($link, $query);
@@ -68,7 +73,7 @@ if (isset($_GET['id'])) {
     // คำสั่ง SQL สำหรับดึงข้อมูลภาพจากฐานข้อมูล
     $query = "SELECT atk_test_result FROM medicalreport WHERE medical_report_id = ?";
     $stmt = mysqli_prepare($link, $query);
-    mysqli_stmt_bind_param($stmt, "b", $medical_report_id);
+    mysqli_stmt_bind_param($stmt, "i", $medical_report_id);  // Use 'i' for integer binding
     mysqli_stmt_execute($stmt);
     mysqli_stmt_store_result($stmt);
     mysqli_stmt_bind_result($stmt, $atk_test_result);
@@ -87,18 +92,25 @@ if (isset($_GET['id'])) {
     mysqli_stmt_close($stmt);
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รายชื่อทหารที่สถานะส่งไปแล้ว</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KyZXEJ2QfJfS0PjYI6D5XzFSbF31hbb1dHLJ4mz5IKK9j8o6Hh2OxlH2wz9LkCUl" crossorigin="anonymous">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AdminLTE 3 | Starter</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <style>
-        body {
+        <style>body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f7fa;
             padding-top: 50px;
@@ -160,8 +172,8 @@ if (isset($_GET['id'])) {
             background-color: #218838;
         }
 
-        .form-control,
-        select.form-control {
+        .form-control1,
+        select.form-control1 {
             height: 45px;
             padding: 10px;
             border-radius: 5px;
@@ -176,7 +188,7 @@ if (isset($_GET['id'])) {
             font-size: 1rem;
         }
 
-        .form-control:focus {
+        .form-control1:focus {
             border-color: #80bdff;
             box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
         }
@@ -195,107 +207,99 @@ if (isset($_GET['id'])) {
             margin: 0 10px;
         }
     </style>
+
 </head>
 
-<body>
-    <div class="container">
-        <h1>รายชื่อทหารที่สถานะส่งไปแล้ว</h1>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
 
-        <!-- Dropdown สำหรับกรองผลัดและหน่วยฝึก -->
-        <div class="filter-form">
-            <form method="GET">
-                <select name="rotation" class="form-control" onchange="this.form.submit()">
-                    <option value="">เลือกผลัด</option>
-                    <!-- เติมค่าผลัดจากฐานข้อมูล -->
-                    <?php
-                    $rotation_query = "SELECT * FROM rotation";
-                    $rotation_result = mysqli_query($link, $rotation_query);
-                    while ($rotation = mysqli_fetch_assoc($rotation_result)) {
-                        echo "<option value='{$rotation['rotation_id']}'" . ($rotation['rotation_id'] == $rotation_filter ? ' selected' : '') . ">{$rotation['rotation']}</option>";
-                    }
-                    ?>
-                </select>
-                <select name="training_unit" class="form-control" onchange="this.form.submit()">
-                    <option value="">เลือกหน่วยฝึก</option>
-                    <!-- เติมค่าหน่วยฝึกจากฐานข้อมูล -->
-                    <?php
-                    $training_query = "SELECT * FROM training";
-                    $training_result = mysqli_query($link, $training_query);
-                    while ($training = mysqli_fetch_assoc($training_result)) {
-                        echo "<option value='{$training['training_unit_id']}'" . ($training['training_unit_id'] == $training_unit_filter ? ' selected' : '') . ">{$training['training_unit']}</option>";
-                    }
-                    ?>
-                </select>
-            </form>
-        </div>
+        <!-- Navbar -->
 
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>หน่วยฝึก</th>
-                    <th>ชื่อ - นามสกุล</th>
-                    <th>ผลัด</th>
-                    <th>หน่วยที่สังกัด</th>
-                    <th>อาการ</th>
-                    <th>วันที่รายงาน</th>
-                    <th>อนุมัติ</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($row['training_unit_name']); ?></td>
-                        <td><?php echo htmlspecialchars($row['first_name']) . " " . htmlspecialchars($row['last_name']); ?>
-                        </td>
-                        <td><?php echo htmlspecialchars($row['rotation_name']); ?></td>
-                        <td><?php echo htmlspecialchars($row['affiliated_unit']); ?></td>
-                        <td><?php echo nl2br(htmlspecialchars($row['symptom_description'])); ?></td>
-                        <td><?php echo htmlspecialchars($row['report_date']); ?></td>
-                        <td>
-                            <form method="POST" class="form-container">
-                                <input type="hidden" name="medical_report_id"
-                                    value="<?php echo htmlspecialchars($row['medical_report_id']); ?>">
-                                <div class="form-group">
-                                    <label for="appointment_date">วันที่นัดหมาย:</label>
-                                    <input type="datetime-local" name="appointment_date" id="appointment_date"
-                                        class="form-control" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="appointment_location">สถานที่นัดหมาย:</label>
-                                    <select name="appointment_location" id="appointment_location" class="form-control"
-                                        required>
-                                        <option value="OPD">OPD</option>
-                                        <option value="ER">ER</option>
-                                        <option value="IPD">IPD</option>
-                                    </select>
-                                </div>
-                                <button type="submit" name="approve" class="btn-submit mt-3">บันทึกการนัดหมาย</button>
-                            </form>
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#detailModal<?php echo $row['medical_report_id']; ?>">
-                                ดูรายละเอียด
-                            </button>
-                            <div class="modal fade" id="detailModal<?php echo $row['medical_report_id']; ?>" tabindex="-1"
-                                aria-labelledby="detailModalLabel<?php echo $row['medical_report_id']; ?>"
-                                aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title"
-                                                id="detailModalLabel<?php echo $row['medical_report_id']; ?>">
-                                                รายละเอียดผู้ป่วย</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
+        <?php
+        $sidebarPath = '../components/nav_bar.php';
+        if (file_exists($sidebarPath)) {
+            include($sidebarPath);
+        } else {
+            echo "ไม่พบไฟล์ Sidebar.";
+        }
+        ?>
+        <!-- Sidebar -->
+        <?php
+        $sidebarPath = '../components/sidebar.php';
+        if (file_exists($sidebarPath)) {
+            include($sidebarPath);
+        } else {
+            echo "ไม่พบไฟล์ Sidebar.";
+        }
+        ?>
+        <!-- Content -->
+        <div class="content-wrapper">
+            <section class="content">
+                <div class="container-fluid">
+                    <br>
+                    <h1>รายชื่อทหารที่สถานะส่งไปแล้ว</h1>
+
+                    <!-- Dropdown สำหรับกรองผลัด, หน่วยฝึก, และสถานะ -->
+                    <div class="filter-form">
+                        <form method="GET">
+                            <select name="rotation" class="form-control1" onchange="this.form.submit()">
+                                <option value="">เลือกผลัด</option>
+                                <?php
+                                $rotation_query = "SELECT * FROM rotation";
+                                $rotation_result = mysqli_query($link, $rotation_query);
+                                while ($rotation = mysqli_fetch_assoc($rotation_result)) {
+                                    echo "<option value='{$rotation['rotation_id']}'" . ($rotation['rotation_id'] == $rotation_filter ? ' selected' : '') . ">{$rotation['rotation']}</option>";
+                                }
+                                ?>
+                            </select>
+                            <select name="training_unit" class="form-control1" onchange="this.form.submit()">
+                                <option value="">เลือกหน่วยฝึก</option>
+                                <?php
+                                $training_query = "SELECT * FROM training";
+                                $training_result = mysqli_query($link, $training_query);
+                                while ($training = mysqli_fetch_assoc($training_result)) {
+                                    echo "<option value='{$training['training_unit_id']}'" . ($training['training_unit_id'] == $training_unit_filter ? ' selected' : '') . ">{$training['training_unit']}</option>";
+                                }
+                                ?>
+                            </select>
+                            <select name="status" class="form-control1" onchange="this.form.submit()">
+                                <option value="">เลือกสถานะ</option>
+                                <option value="sent" <?php echo ($status_filter == 'sent') ? 'selected' : ''; ?>>
+                                    ยังไม่ได้นัดหมาย
+                                </option>
+                                <option value="approved" <?php echo ($status_filter == 'approved') ? 'selected' : ''; ?>>
+                                    นัดหมายแล้ว
+                                </option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>หน่วยฝึก</th>
+                                <th>ชื่อ - นามสกุล</th>
+                                <th>ผลัด</th>
+                                <th>หน่วยที่สังกัด</th>
+                                <th>วันที่รายงาน</th>
+                                <th>รายละเอียด</th>
+                                <th>นัดหมาย</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($row['training_unit_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['first_name']) . " " . htmlspecialchars($row['last_name']); ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row['rotation_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['affiliated_unit']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['report_date']); ?></td>
+
+                                    <td>
                                         <div class="modal-body">
-                                            <p><strong>ชื่อ-นามสกุล:</strong>
-                                                <?php echo htmlspecialchars($row['first_name']) . " " . htmlspecialchars($row['last_name']); ?>
-                                            </p>
                                             <p><strong>อาการ:</strong>
-                                                <?php echo nl2br(htmlspecialchars($row['symptom_description'])); ?>
-                                            </p>
+                                                <?php echo nl2br(htmlspecialchars($row['symptom_description'])); ?></p>
                                             <p><strong>ผลการตรวจ ATK:</strong>
                                                 <?php
                                                 // ตรวจสอบให้แน่ใจว่า $atk_test_result เป็นข้อมูลที่ถูกต้องและมีขนาดที่ไม่เป็นศูนย์
@@ -305,34 +309,76 @@ if (isset($_GET['id'])) {
                                                     echo "No test result available.";
                                                 }
                                                 ?>
-
                                             </p>
-                                            <p><strong>สัญญาณชีพ:</strong><br>อุณหภูมิ:
-                                                <?php echo htmlspecialchars($row['vital_signs_temperature']); ?> °C,
-                                                ความดัน: <?php echo htmlspecialchars($row['vital_signs_blood_pressure']); ?>
-                                                mmHg,
-                                                ชีพจร: <?php echo htmlspecialchars($row['vital_signs_heart_rate']); ?> bpm
+                                            <p><strong>สัญญาณชีพ:</strong> อุณหภูมิ:
+                                                <?php echo htmlspecialchars($row['vital_signs_temperature']); ?>,
+                                                ความดันโลหิต:
+                                                <?php echo htmlspecialchars($row['vital_signs_blood_pressure']); ?>, ชีพจร:
+                                                <?php echo htmlspecialchars($row['vital_signs_heart_rate']); ?>
                                             </p>
                                             <p><strong>ระดับความเจ็บปวด:</strong>
                                                 <?php echo htmlspecialchars($row['pain_score']); ?></p>
                                         </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-bs-dismiss="modal">ปิด</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+                                    </td>
+
+                                    <td>
+                                        <?php
+                                        // Check if the appointment is already made
+                                        $appointment_query = "SELECT appointment_date, appointment_location FROM medicalreportapproval WHERE medical_report_id = ?";
+                                        $appointment_stmt = mysqli_prepare($link, $appointment_query);
+                                        mysqli_stmt_bind_param($appointment_stmt, "i", $row['medical_report_id']);
+                                        mysqli_stmt_execute($appointment_stmt);
+                                        mysqli_stmt_store_result($appointment_stmt);
+                                        mysqli_stmt_bind_result($appointment_stmt, $appointment_date, $appointment_location);
+
+                                        if (mysqli_stmt_num_rows($appointment_stmt) > 0) {
+                                            mysqli_stmt_fetch($appointment_stmt);
+                                            echo "<strong>วันที่นัดหมาย:</strong> " . htmlspecialchars($appointment_date) . "<br>";
+                                            echo "<strong>สถานที่นัดหมาย:</strong> " . htmlspecialchars($appointment_location);
+                                        } else {
+                                            ?>
+                                            <form method="POST" class="form-container">
+                                                <input type="hidden" name="medical_report_id"
+                                                    value="<?php echo htmlspecialchars($row['medical_report_id']); ?>">
+                                                <div class="form-group">
+                                                    <label for="appointment_date">วันที่นัดหมาย:</label>
+                                                    <input type="datetime-local" name="appointment_date" id="appointment_date"
+                                                        class="form-control" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="appointment_location">สถานที่นัดหมาย:</label>
+                                                    <select name="appointment_location" id="appointment_location"
+                                                        class="form-control" required>
+                                                        <option value="OPD">OPD</option>
+                                                        <option value="ER">ER</option>
+                                                        <option value="IPD">IPD</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" name="approve"
+                                                    class="btn-submit mt-3">บันทึกการนัดหมาย</button>
+                                            </form>
+                                            <?php
+                                        }
+
+                                        mysqli_stmt_close($appointment_stmt);
+                                        ?>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+
+
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-+0n0xW1vC5uRzZ-0g6jWoAI03fFUKDQGiR22XX5bCwAPnPp5F7fEXA5T2LsAGTI6" crossorigin="anonymous">
-        </script>
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
 </body>
 
 </html>

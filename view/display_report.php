@@ -16,26 +16,40 @@ if (!$link) {
 // Fetch selected status from dropdown
 $selected_status = isset($_GET['status_filter']) ? $_GET['status_filter'] : '';
 
-// Fetch soldiers with medical reports based on status filter
-$query = "SELECT s.soldier_id, s.soldier_id_card, s.first_name, s.last_name,
-                 s.rotation_id, s.training_unit_id, s.affiliated_unit,
-                 m.medical_report_id, m.symptom_description, m.status,
-                 r.rotation, t.training_unit
-          FROM soldier s
-          LEFT JOIN medicalreport m ON s.soldier_id = m.soldier_id
-          LEFT JOIN rotation r ON s.rotation_id = r.rotation_id
-          LEFT JOIN training t ON s.training_unit_id = t.training_unit_id
-          WHERE m.medical_report_id IS NOT NULL";
+// Mapping statuses to new values
+$status_mapping = [
+    'pending' => 'ยังไม่ได้หมาย',  // Updated status
+    'approved' => 'นัดหมายแล้ว',  // Updated status
+    'sent' => 'รอนัดหมาย',        // Updated status
+];
+$training_unit_id = $_SESSION['user']['training_unit_id']; // ID of the training unit
 
+// Modified query to include a condition for training_unit_id
+$query = "SELECT s.soldier_id, s.soldier_id_card, s.first_name, s.last_name,
+s.rotation_id, s.training_unit_id, s.affiliated_unit,
+m.medical_report_id, m.symptom_description, m.status,
+r.rotation, t.training_unit,
+ma.appointment_date, ma.appointment_location
+FROM soldier s
+LEFT JOIN medicalreport m ON s.soldier_id = m.soldier_id
+LEFT JOIN rotation r ON s.rotation_id = r.rotation_id
+LEFT JOIN training t ON s.training_unit_id = t.training_unit_id
+LEFT JOIN medicalreportapproval ma ON m.medical_report_id = ma.medical_report_id
+WHERE m.medical_report_id IS NOT NULL AND s.training_unit_id = ?";
 if ($selected_status) {
     $query .= " AND m.status = ?";
 }
 
 $stmt = mysqli_prepare($link, $query);
 
+
 if ($selected_status) {
-    mysqli_stmt_bind_param($stmt, "s", $selected_status);
+    mysqli_stmt_bind_param($stmt, "is", $training_unit_id, $selected_status);
+} else {
+    mysqli_stmt_bind_param($stmt, "i", $training_unit_id);
 }
+
+
 
 if (!$stmt) {
     die('SQL prepare failed: ' . mysqli_error($link));
@@ -57,7 +71,7 @@ mysqli_stmt_close($stmt);
 
 // Process bulk send if form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_all'])) {
-    $query_all = "SELECT medical_report_id FROM medicalreport WHERE status != 'sent'";
+    $query_all = "SELECT medical_report_id FROM medicalreport WHERE status NOT IN ('sent', 'approved')";
     $result_all = mysqli_query($link, $query_all);
 
     if ($result_all && mysqli_num_rows($result_all) > 0) {
@@ -128,7 +142,6 @@ function sendToHospital($medical_report_id)
     mysqli_stmt_close($update_stmt);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="th">
 
@@ -160,11 +173,10 @@ function sendToHospital($medical_report_id)
                                     <select id="status_filter" name="status_filter" class="form-control">
                                         <option value="" <?php echo $selected_status === '' ? 'selected' : ''; ?>>ทั้งหมด
                                         </option>
-                                        <option value="pending" <?php echo $selected_status === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                        <option value="approved" <?php echo $selected_status === 'approved' ? 'selected' : ''; ?>>Approved</option>
-
+                                        <option value="pending" <?php echo $selected_status === 'pending' ? 'selected' : ''; ?>>ยังไม่ได้นัดหมาย</option>
+                                        <option value="approved" <?php echo $selected_status === 'approved' ? 'selected' : ''; ?>>นัดหมายแล้ว</option>
                                         <option value="sent" <?php echo $selected_status === 'sent' ? 'selected' : ''; ?>>
-                                            Sent</option>
+                                            รอนัดหมาย</option>
                                     </select>
                                 </div>
                                 <button type="submit" class="btn btn-secondary mb-3">กรอง</button>
@@ -193,10 +205,27 @@ function sendToHospital($medical_report_id)
                                                     <td><?php echo $soldier['rotation']; ?></td>
                                                     <td><?php echo $soldier['training_unit']; ?></td>
                                                     <td><?php echo nl2br($soldier['symptom_description']); ?></td>
-                                                    <td><?php echo $soldier['status']; ?></td>
+                                                    <td>
+                                                        <?php
+                                                        $status = $soldier['status'];
+                                                        echo $status_mapping[$status] ?? $status;
+
+                                                        // If the status is 'sent', display appointment details
+                                                        if ($status === 'approved') {
+                                                            $appointment_date = $soldier['appointment_date'];
+                                                            $appointment_location = $soldier['appointment_location'];
+                                                            $appointment_time = date('H:i', strtotime($appointment_date)); // Extract time from appointment_date
+                                                
+                                                            echo "<br><strong>นัดหมายวันที่:</strong> " . date('d-m-Y', strtotime($appointment_date));
+                                                            echo "<br><strong>เวลา:</strong> " . $appointment_time;
+                                                            echo "<br><strong>สถานที่:</strong> " . $appointment_location;
+                                                        }
+                                                        ?>
+                                                    </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
+
                                     </table>
                                 <?php else: ?>
                                     <p>ไม่พบข้อมูลที่ต้องส่งในฐานข้อมูล</p>

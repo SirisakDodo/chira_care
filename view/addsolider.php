@@ -30,10 +30,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_soldier'])) {
 
     // ตรวจสอบจำนวนตัวแปรที่ส่งไปใน bind_param ให้ตรงกับจำนวน placeholders "?"
     $types = "sssiissssssi"; // ชนิดข้อมูล
-    if (!mysqli_stmt_bind_param($stmt, $types, 
-        $soldier_id_card, $first_name, $last_name, $rotation_id, $training_unit_id, 
-        $affiliated_unit, $weight_kg, $height_cm, $medical_allergy_food_history, 
-        $underlying_diseases, $selection_method, $service_duration)) {
+    if (
+        !mysqli_stmt_bind_param(
+            $stmt,
+            $types,
+            $soldier_id_card,
+            $first_name,
+            $last_name,
+            $rotation_id,
+            $training_unit_id,
+            $affiliated_unit,
+            $weight_kg,
+            $height_cm,
+            $medical_allergy_food_history,
+            $underlying_diseases,
+            $selection_method,
+            $service_duration
+        )
+    ) {
         die("Bind failed: " . mysqli_stmt_error($stmt));
     }
 
