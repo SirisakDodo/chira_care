@@ -152,6 +152,92 @@ function sendToHospital($medical_report_id)
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+        }
+
+        .table-wrapper {
+            background: #fff;
+            padding: 20px;
+            margin: 30px 0;
+        }
+
+        .table-title {
+            padding-bottom: 10px;
+            margin: 0 0 10px;
+            border-bottom: 2px solid #e9e9e9;
+        }
+
+        .table-title h2 {
+            margin: 8px 0 0;
+            font-size: 24px;
+        }
+
+        .table-filter {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .table-filter .btn {
+            border: none;
+            background: #007bff;
+            color: #fff;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .table-filter select {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        table.table {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            width: 100%;
+        }
+
+        table.table thead th {
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            padding: 12px;
+            border: none;
+        }
+
+        table.table tbody tr {
+            background-color: #fff;
+            text-align: center;
+            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+
+        table.table tbody tr td {
+            padding: 10px 15px;
+            border: none;
+            vertical-align: middle;
+        }
+
+        table.table tbody tr td:last-child {
+            text-align: center;
+        }
+
+        .action-icons i {
+            font-size: 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            color: #007bff;
+        }
+
+        .action-icons i:hover {
+            color: #0056b3;
+        }
+    </style>
 </head>
 
 <body>
@@ -166,28 +252,39 @@ function sendToHospital($medical_report_id)
                         <div class="card-header">
                             <h3 class="card-title">ข้อมูลทหารและรายงานอาการ</h3>
                         </div>
-                        <div class="card-body">
-                            <form method="GET" action="">
-                                <div class="form-group">
-                                    <label for="status_filter">กรองตามสถานะ:</label>
-                                    <select id="status_filter" name="status_filter" class="form-control">
-                                        <option value="" <?php echo $selected_status === '' ? 'selected' : ''; ?>>ทั้งหมด
-                                        </option>
-                                        <option value="pending" <?php echo $selected_status === 'pending' ? 'selected' : ''; ?>>ยังไม่ได้นัดหมาย</option>
-                                        <option value="approved" <?php echo $selected_status === 'approved' ? 'selected' : ''; ?>>นัดหมายแล้ว</option>
-                                        <option value="sent" <?php echo $selected_status === 'sent' ? 'selected' : ''; ?>>
-                                            รอนัดหมาย</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-secondary mb-3">กรอง</button>
-                            </form>
-
-                            <form method="POST" action="">
-                                <?php if (!empty($soldiers)): ?>
-                                    <table class="table table-bordered">
+                        <div class="container-xl">
+                            <div class="table-responsive">
+                                <div class="table-wrapper">
+                                    <div class="table-title">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <h2>ข้อมูลส่งป่วยทหาร</h2>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <form method="GET" action="" class="float-right">
+                                                    <div class="input-group">
+                                                        <select id="status_filter" name="status_filter"
+                                                            class="form-control">
+                                                            <option value="" <?php echo $selected_status === '' ? 'selected' : ''; ?>>ทั้งหมด</option>
+                                                            <option value="pending" <?php echo $selected_status === 'pending' ? 'selected' : ''; ?>>
+                                                                ยังไม่ได้นัดหมาย</option>
+                                                            <option value="approved" <?php echo $selected_status === 'approved' ? 'selected' : ''; ?>>
+                                                                นัดหมายแล้ว</option>
+                                                            <option value="sent" <?php echo $selected_status === 'sent' ? 'selected' : ''; ?>>รอนัดหมาย</option>
+                                                        </select>
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-secondary"
+                                                                type="submit">กรอง</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <table class="table table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>รหัสทหาร</th>
+                                                <th>#</th>
                                                 <th>ชื่อ</th>
                                                 <th>หน่วยฝึกต้นสังกัด</th>
                                                 <th>รหัสหมุนเวียน</th>
@@ -197,50 +294,55 @@ function sendToHospital($medical_report_id)
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($soldiers as $soldier): ?>
-                                                <tr>
-                                                    <td><?php echo $soldier['soldier_id_card']; ?></td>
-                                                    <td><?php echo $soldier['first_name'] . ' ' . $soldier['last_name']; ?></td>
-                                                    <td><?php echo $soldier['affiliated_unit']; ?></td>
-                                                    <td><?php echo $soldier['rotation']; ?></td>
-                                                    <td><?php echo $soldier['training_unit']; ?></td>
-                                                    <td><?php echo nl2br($soldier['symptom_description']); ?></td>
-                                                    <td>
-                                                        <?php
-                                                        $status = $soldier['status'];
-                                                        echo $status_mapping[$status] ?? $status;
+                                            <?php if (!empty($soldiers)): ?>
+                                                <?php $count = 1; ?>
+                                                <?php foreach ($soldiers as $soldier): ?>
+                                                    <tr>
+                                                        <td><?php echo $count++; ?></td>
+                                                        <td><?php echo $soldier['first_name'] . ' ' . $soldier['last_name']; ?>
+                                                        </td>
+                                                        <td><?php echo $soldier['affiliated_unit']; ?></td>
+                                                        <td><?php echo $soldier['rotation']; ?></td>
+                                                        <td><?php echo $soldier['training_unit']; ?></td>
+                                                        <td><?php echo nl2br($soldier['symptom_description']); ?></td>
+                                                        <td>
+                                                            <?php
+                                                            $status = $soldier['status'];
+                                                            echo $status_mapping[$status] ?? $status;
 
-                                                        // If the status is 'sent', display appointment details
-                                                        if ($status === 'approved') {
-                                                            $appointment_date = $soldier['appointment_date'];
-                                                            $appointment_location = $soldier['appointment_location'];
-                                                            $appointment_time = date('H:i', strtotime($appointment_date)); // Extract time from appointment_date
-                                                
-                                                            echo "<br><strong>นัดหมายวันที่:</strong> " . date('d-m-Y', strtotime($appointment_date));
-                                                            echo "<br><strong>เวลา:</strong> " . $appointment_time;
-                                                            echo "<br><strong>สถานที่:</strong> " . $appointment_location;
-                                                        }
-                                                        ?>
+                                                            if ($status === 'approved') {
+                                                                $appointment_date = $soldier['appointment_date'];
+                                                                $appointment_location = $soldier['appointment_location'];
+                                                                $appointment_time = date('H:i', strtotime($appointment_date));
+                                                                echo "<br><strong>วันที่:</strong> " . date('d-m-Y', strtotime($appointment_date));
+                                                                echo "<br><strong>เวลา:</strong> " . $appointment_time;
+                                                                echo "<br><strong>สถานที่:</strong> " . $appointment_location;
+                                                            }
+                                                            ?>
+                                                        </td>
+
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td colspan="8" class="text-center">ไม่พบข้อมูลที่ต้องส่งในฐานข้อมูล
                                                     </td>
                                                 </tr>
-                                            <?php endforeach; ?>
+                                            <?php endif; ?>
                                         </tbody>
-
                                     </table>
-                                <?php else: ?>
-                                    <p>ไม่พบข้อมูลที่ต้องส่งในฐานข้อมูล</p>
-                                <?php endif; ?>
-
-                                <button type="submit" name="send_all"
-                                    class="btn btn-success mt-3">ส่งข้อมูลทั้งหมดไปรพ.</button>
-                                <a href="insert_medicalreport.php" class="btn btn-primary mt-3">เพิ่มรายงานป่วย</a>
-                            </form>
+                                    <div class="clearfix">
+                                        <form method="POST" action="">
+                                            <button type="submit" name="send_all"
+                                                class="btn btn-success float-left">ส่งข้อมูลทั้งหมดไปรพ.</button>
+                                        </form>
+                                        <a href="insert_medicalreport.php"
+                                            class="btn btn-primary float-right">เพิ่มรายงานป่วย</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
+
 </body>
 
 </html>
