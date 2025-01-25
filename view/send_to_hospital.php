@@ -9,8 +9,7 @@ $status_filter = isset($_GET['status']) ? $_GET['status'] : '';  // เพิ่
 
 // สร้างคำสั่ง SQL เพื่อดึงข้อมูลที่ตรงกับเงื่อนไขที่กรอง
 $query = "SELECT s.soldier_id, s.first_name, s.last_name, r.rotation AS rotation_name, t.training_unit AS training_unit_name,
-                 s.affiliated_unit, mr.symptom_description, mr.report_date, mr.medical_report_id,
-                 mr.atk_test_result, mr.vital_signs_temperature, mr.vital_signs_blood_pressure, mr.vital_signs_heart_rate, mr.pain_score
+                 s.affiliated_unit, mr.symptom_description, mr.medical_report_id
           FROM medicalreport mr
           JOIN soldier s ON mr.soldier_id = s.soldier_id
           LEFT JOIN rotation r ON s.rotation_id = r.rotation_id
@@ -65,32 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approve'])) {
         mysqli_stmt_close($stmt);
     }
 }
-
-// รับค่า ID ของรายงานการแพทย์ (medical_report_id) สำหรับการแสดงรูปภาพ
-if (isset($_GET['id'])) {
-    $medical_report_id = $_GET['id'];
-
-    // คำสั่ง SQL สำหรับดึงข้อมูลภาพจากฐานข้อมูล
-    $query = "SELECT atk_test_result FROM medicalreport WHERE medical_report_id = ?";
-    $stmt = mysqli_prepare($link, $query);
-    mysqli_stmt_bind_param($stmt, "i", $medical_report_id);  // Use 'i' for integer binding
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_store_result($stmt);
-    mysqli_stmt_bind_result($stmt, $atk_test_result);
-
-    // ตรวจสอบผลลัพธ์และแสดงผล
-    if (mysqli_stmt_num_rows($stmt) > 0) {
-        mysqli_stmt_fetch($stmt);
-
-        // แสดงภาพโดยใช้ base64_encode
-        echo "<img src='data:image/jpeg;base64," . base64_encode($atk_test_result) . "' alt='ATK Test Result' />";
-    } else {
-        echo "ไม่พบข้อมูลรูปภาพ";
-    }
-
-    // ปิดการเชื่อมต่อ
-    mysqli_stmt_close($stmt);
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -110,7 +83,7 @@ if (isset($_GET['id'])) {
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <style>
-        <style>body {
+        body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f7fa;
             padding-top: 50px;
@@ -281,72 +254,48 @@ if (isset($_GET['id'])) {
                                 <th>ชื่อ - นามสกุล</th>
                                 <th>ผลัด</th>
                                 <th>หน่วยที่สังกัด</th>
-                                <th>วันที่รายงาน</th>
                                 <th>รายละเอียด</th>
-                                <th>นัดหมาย</th>
+                                <th>วันที่นัดหมาย</th>
+                                <th>สถานที่นัดหมาย</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php while ($row = mysqli_fetch_assoc($result)): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($row['training_unit_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['first_name']) . " " . htmlspecialchars($row['last_name']); ?>
-                                    </td>
+                                    <td><?php echo htmlspecialchars($row['first_name']) . " " . htmlspecialchars($row['last_name']); ?></td>
                                     <td><?php echo htmlspecialchars($row['rotation_name']); ?></td>
                                     <td><?php echo htmlspecialchars($row['affiliated_unit']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['report_date']); ?></td>
-
                                     <td>
                                         <div class="modal-body">
                                             <p><strong>อาการ:</strong>
                                                 <?php echo nl2br(htmlspecialchars($row['symptom_description'])); ?></p>
-                                            <p><strong>ผลการตรวจ ATK:</strong>
-                                                <?php
-                                                // ตรวจสอบให้แน่ใจว่า $atk_test_result เป็นข้อมูลที่ถูกต้องและมีขนาดที่ไม่เป็นศูนย์
-                                                if (!empty($atk_test_result)) {
-                                                    echo "<img src='data:image/jpeg;base64," . base64_encode($atk_test_result) . "' alt='ATK Test Result' />";
-                                                } else {
-                                                    echo "No test result available.";
-                                                }
-                                                ?>
-                                            </p>
-                                            <p><strong>สัญญาณชีพ:</strong> อุณหภูมิ:
-                                                <?php echo htmlspecialchars($row['vital_signs_temperature']); ?>,
-                                                ความดันโลหิต:
-                                                <?php echo htmlspecialchars($row['vital_signs_blood_pressure']); ?>, ชีพจร:
-                                                <?php echo htmlspecialchars($row['vital_signs_heart_rate']); ?>
-                                            </p>
-                                            <p><strong>ระดับความเจ็บปวด:</strong>
-                                                <?php echo htmlspecialchars($row['pain_score']); ?></p>
                                         </div>
                                     </td>
+                                    <?php
+                                    // Check if the appointment is already made
+                                    $appointment_query = "SELECT appointment_date, appointment_location FROM medicalreportapproval WHERE medical_report_id = ?";
+                                    $appointment_stmt = mysqli_prepare($link, $appointment_query);
+                                    mysqli_stmt_bind_param($appointment_stmt, "i", $row['medical_report_id']);
+                                    mysqli_stmt_execute($appointment_stmt);
+                                    mysqli_stmt_store_result($appointment_stmt);
+                                    mysqli_stmt_bind_result($appointment_stmt, $appointment_date, $appointment_location);
 
-                                    <td>
-                                        <?php
-                                        // Check if the appointment is already made
-                                        $appointment_query = "SELECT appointment_date, appointment_location FROM medicalreportapproval WHERE medical_report_id = ?";
-                                        $appointment_stmt = mysqli_prepare($link, $appointment_query);
-                                        mysqli_stmt_bind_param($appointment_stmt, "i", $row['medical_report_id']);
-                                        mysqli_stmt_execute($appointment_stmt);
-                                        mysqli_stmt_store_result($appointment_stmt);
-                                        mysqli_stmt_bind_result($appointment_stmt, $appointment_date, $appointment_location);
-
-                                        if (mysqli_stmt_num_rows($appointment_stmt) > 0) {
-                                            mysqli_stmt_fetch($appointment_stmt);
-                                            echo "<strong>วันที่นัดหมาย:</strong> " . htmlspecialchars($appointment_date) . "<br>";
-                                            echo "<strong>สถานที่นัดหมาย:</strong> " . htmlspecialchars($appointment_location);
-                                        } else {
-                                            ?>
-                                            <form method="POST" class="form-container">
-                                                <input type="hidden" name="medical_report_id"
-                                                    value="<?php echo htmlspecialchars($row['medical_report_id']); ?>">
+                                    if (mysqli_stmt_num_rows($appointment_stmt) > 0) {
+                                        mysqli_stmt_fetch($appointment_stmt);
+                                        echo "<td>" . htmlspecialchars($appointment_date) . "</td>";
+                                        echo "<td>" . htmlspecialchars($appointment_location) . "</td>";
+                                    } else {
+                                        ?>
+                                        <form method="POST" class="form-container">
+                                            <td>
                                                 <div class="form-group">
-                                                    <label for="appointment_date">วันที่นัดหมาย:</label>
                                                     <input type="datetime-local" name="appointment_date" id="appointment_date"
                                                         class="form-control" required>
                                                 </div>
+                                            </td>
+                                            <td>
                                                 <div class="form-group">
-                                                    <label for="appointment_location">สถานที่นัดหมาย:</label>
                                                     <select name="appointment_location" id="appointment_location"
                                                         class="form-control" required>
                                                         <option value="OPD">OPD</option>
@@ -354,19 +303,23 @@ if (isset($_GET['id'])) {
                                                         <option value="IPD">IPD</option>
                                                     </select>
                                                 </div>
-                                                <button type="submit" name="approve"
-                                                    class="btn-submit mt-3">บันทึกการนัดหมาย</button>
-                                            </form>
-                                            <?php
-                                        }
+                                            </td>
+                                            <input type="hidden" name="medical_report_id"
+                                                value="<?php echo htmlspecialchars($row['medical_report_id']); ?>">
+                                        </form>
+                                        <?php
+                                    }
 
-                                        mysqli_stmt_close($appointment_stmt);
-                                        ?>
-                                    </td>
+                                    mysqli_stmt_close($appointment_stmt);
+                                    ?>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>
                     </table>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button type="submit" name="approve" class="btn-submit">บันทึก</button>
+                    </div>
                 </div>
             </section>
         </div>

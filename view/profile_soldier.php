@@ -17,7 +17,7 @@ if ($soldierId) {
 
     $stmt = mysqli_prepare($link, $sql);
     mysqli_stmt_bind_param($stmt, "s", $soldierId);
-    mysqli_stmt_execute($stmt);
+    mysqli_stmt_execute($stmt); 
     $result = mysqli_stmt_get_result($stmt);
     $soldier = mysqli_fetch_assoc($result);
 
