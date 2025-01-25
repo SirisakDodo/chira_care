@@ -1,6 +1,5 @@
-<<<<<<< HEAD
 <?php
-require_once 'config/database.php';
+require_once '../config/database.php';
 ?>
 
 <!DOCTYPE html>
@@ -155,6 +154,7 @@ require_once 'config.php'; // เชื่อมต่อฐานข้อม�
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -170,9 +170,11 @@ require_once 'config.php'; // เชื่อมต่อฐานข้อม�
             outline: none;
             box-shadow: 0 0 5px 0px gray inset;
         }
+
         input[type='radio']:hover {
             box-shadow: 0 0 5px 0px orange inset;
         }
+
         input[type='radio']:before {
             content: '';
             display: block;
@@ -181,16 +183,19 @@ require_once 'config.php'; // เชื่อมต่อฐานข้อม�
             margin: 20% auto;
             border-radius: 50%;
         }
+
         input[type='radio']:checked:before {
             background: blue;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h3 align="center">แบบประเมินทดสอบการติดบุหรี่</h3>
         <form id="formqsys" name="formqsys" method="post" action="process.php">
-            <table width="70%" border="1" align="center" cellpadding="0" cellspacing="0" class="table table-bordered table-hover">
+            <table width="70%" border="1" align="center" cellpadding="0" cellspacing="0"
+                class="table table-bordered table-hover">
                 <tr>
                     <td rowspan="2" align="center"><strong>หัวข้อการประเมิน</strong></td>
                     <td colspan="5" align="center"><strong>ระดับความต้องการบุหรี่</strong></td>
@@ -207,7 +212,7 @@ require_once 'config.php'; // เชื่อมต่อฐานข้อม�
                 // ดึงคำถามจากฐานข้อมูล
                 $sql = "SELECT question_id, question_text FROM smoking_assessment";
                 $result = $link->query($sql); // ใช้ $link แทน $conn
-
+                
                 if ($result->num_rows > 0) {
                     while ($row = $result->fetch_assoc()) {
                         echo "<tr>";
@@ -232,5 +237,5 @@ require_once 'config.php'; // เชื่อมต่อฐานข้อม�
         </form>
     </div>
 </body>
+
 </html>
->>>>>>> ec6eff4507cc2d2ad7bb6472232b6e63d305ef1f

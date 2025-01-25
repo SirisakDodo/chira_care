@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <?php
 require_once 'config/database.php';
 
@@ -147,7 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $totalScore += $answer_value;
 
             // บันทึกคำตอบลงฐานข้อมูล
-            $insertSql = "INSERT INTO answers (soldier_id, question_id, answer_value, submitted_at) 
+            $insertSql = "INSERT INTO answers (soldier_id, question_id, answer_value, submitted_at)
                           VALUES (?, ?, ?, NOW())
                           ON DUPLICATE KEY UPDATE answer_value = VALUES(answer_value), submitted_at = VALUES(submitted_at)";
             $stmt = $link->prepare($insertSql);  // ใช้ $link แทน $conn
@@ -166,8 +165,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "คุณมีอาการเสพติดการสูบบุหรี่ในขั้นรุนแรง";
     }
 
-     // เพิ่มปุ่มเพื่อกลับไปยังหน้า soilder_profile.php
-     echo "<br><a href='soilder_profile.php'><button>กลับไปยังโปรไฟล์</button></a>";
+    // เพิ่มปุ่มเพื่อกลับไปยังหน้า soilder_profile.php
+    echo "<br><a href='soilder_profile.php'><button>กลับไปยังโปรไฟล์</button></a>";
 
     // แสดงประวัติการทำแบบฟอร์ม
     echo "<h2>ประวัติการทำแบบฟอร์ม</h2>";
@@ -197,4 +196,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 }
 ?>
->>>>>>> ec6eff4507cc2d2ad7bb6472232b6e63d305ef1f
