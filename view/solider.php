@@ -129,7 +129,7 @@ if (!$result) {
         }
 
         .pagination .page-link:hover {
-            background-color: #007bff;
+            background-color: rgb(9, 121, 241);
             color: #fff;
         }
 

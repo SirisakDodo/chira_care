@@ -73,6 +73,7 @@ $user = $_SESSION['user'];
 </head>
 
 <body>
+<<<<<<< HEAD
     <div class="container">
         <h1>ยินดีต้อนรับ <?php echo htmlspecialchars($user['soldier_id_card']); ?></h1>
         <p>ชื่อ: <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
@@ -80,6 +81,14 @@ $user = $_SESSION['user'];
         <a href="form.php">ทำแบบประเมินการสูบบุหรี่</a>
         <a href="logout.php" class="logout-link">ออกจากระบบ</a>
     </div>
+=======
+    <h1>ยินดีต้อนรับ <?php echo htmlspecialchars($user['soldier_id_card']); ?></h1>
+    <p>ชื่อ: <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
+    <p>เลขบัตรประชาชน: <?php echo htmlspecialchars($user['soldier_id_card']); ?></p>
+    <br><a href="form.php">ทำแบบประเมินการสูบบุหรี่</a><br/>
+    
+    <br><a href="logout.php">ออกจากระบบ</a><br/>
+>>>>>>> ec6eff4507cc2d2ad7bb6472232b6e63d305ef1f
 </body>
 
 </html>
