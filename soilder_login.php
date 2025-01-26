@@ -27,26 +27,27 @@ $link->close();
 
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เข้าสู่ระบบ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body>
     <div class="container mt-5">
         <h1 class="text-center">เข้าสู่ระบบ</h1>
         <form method="POST" action="soilder_login.php" class="mt-4 mx-auto" style="max-width: 400px;">
             <div class="mb-3">
                 <label for="id-card" class="form-label">เลขบัตรประชาชน</label>
+<<<<<<< HEAD
                 <input type="text" id="id-card" name="id_card" maxlength="13" placeholder="กรอกเลขบัตรประชาชน"
                     class="form-control" required>
+=======
+                <input type="text" id="id-card" name="id_card" maxlength="13" placeholder="กรอกเลขบัตรประชาชน" class="form-control" required>
+>>>>>>> 466ce0eae4b728a5573c253d86c02fd0dcbef446
             </div>
             <button type="submit" class="btn btn-primary w-100">เข้าสู่ระบบ</button>
         </form>
     </div>
 </body>
-
 </html>

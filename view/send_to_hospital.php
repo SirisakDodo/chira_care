@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['approve'])) {
                             <!-- เลือกผลัด -->
                             <select name="rotation" class="form-control d-inline-block w-auto"
                                 onchange="this.form.submit()">
-                                <option value="">เลือกผลัด</option>
+                                <option value="">เลือกผลัก</option>
                                 <?php
                                 $rotation_query = "SELECT * FROM rotation";
                                 $rotation_result = mysqli_query($link, $rotation_query);

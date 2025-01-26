@@ -78,21 +78,23 @@ if ($result->num_rows > 0) {
 
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>โปรไฟล์ผู้ใช้</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body>
     <div class="container mt-5">
         <h1 class="text-center">โปรไฟล์ผู้ใช้</h1>
         <div class="card mt-4">
             <div class="card-body">
+<<<<<<< HEAD
                 <p><strong>ชื่อ:</strong>
                     <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
+=======
+                <p><strong>ชื่อ:</strong> <?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></p>
+>>>>>>> 466ce0eae4b728a5573c253d86c02fd0dcbef446
                 <p><strong>เลขบัตรประชาชน:</strong> <?php echo htmlspecialchars($user['soldier_id_card']); ?></p>
                 <p><strong>คะแนนการทำแบบฟอร์มบุหรี่:</strong> <?php echo $latestScore; ?></p>
                 <p><strong>คะแนนการทำแบบฟอร์มแอลกอฮอล์:</strong> <?php echo $latestAlcohol; ?></p>
@@ -107,5 +109,4 @@ if ($result->num_rows > 0) {
         </div>
     </div>
 </body>
-
 </html>
