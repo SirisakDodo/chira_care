@@ -24,95 +24,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 $link->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .login-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        input[type="text"]:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .alert {
-            color: #e74c3c;
-            text-align: center;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-    </style>
+    <title>เข้าสู่ระบบ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body>
-    <div class="login-container">
-        <h1>เข้าสู่ระบบ</h1>
-        <form method="POST" action="soilder_login.php">
-            <label for="id-card">เลขบัตรประชาชน</label>
-            <input type="text" id="id-card" name="id_card" maxlength="13" placeholder="กรอกเลขบัตรประชาชน" required>
-            <button type="submit">เข้าสู่ระบบ</button>
+    <div class="container mt-5">
+        <h1 class="text-center">เข้าสู่ระบบ</h1>
+        <form method="POST" action="soilder_login.php" class="mt-4 mx-auto" style="max-width: 400px;">
+            <div class="mb-3">
+                <label for="id-card" class="form-label">เลขบัตรประชาชน</label>
+                <input type="text" id="id-card" name="id_card" maxlength="13" placeholder="กรอกเลขบัตรประชาชน" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">เข้าสู่ระบบ</button>
         </form>
     </div>
 </body>
-
 </html>
