@@ -26,6 +26,15 @@
                     </a>
 
                 </li>
+                <li class="nav-item has-treeview">
+                    <a href=medicalreport_list.php class="nav-link">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>
+                            รายชื่อนัดหมาย
+                        </p>
+                    </a>
+
+                </li>
 
 
             </ul>

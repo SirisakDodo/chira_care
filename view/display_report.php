@@ -13,43 +13,27 @@ if (!$link) {
     die("Database connection failed: " . mysqli_connect_error());
 }
 
-// Fetch selected status from dropdown
-$selected_status = isset($_GET['status_filter']) ? $_GET['status_filter'] : '';
-
-// Mapping statuses to new values
-$status_mapping = [
-    'pending' => 'ยังไม่ได้หมาย',  // Updated status
-    'approved' => 'นัดหมายแล้ว',  // Updated status
-    'sent' => 'รอนัดหมาย',        // Updated status
-];
 $training_unit_id = $_SESSION['user']['training_unit_id']; // ID of the training unit
 
-// Modified query to include a condition for training_unit_id
+// Get records per page (default 10)
+$records_per_page = isset($_GET['records_per_page']) ? $_GET['records_per_page'] : 10;
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+$offset = ($page - 1) * $records_per_page;
+
+// Modified query to fetch only 'pending' status
 $query = "SELECT s.soldier_id, s.soldier_id_card, s.first_name, s.last_name,
 s.rotation_id, s.training_unit_id, s.affiliated_unit,
 m.medical_report_id, m.symptom_description, m.status,
-r.rotation, t.training_unit,
-ma.appointment_date, ma.appointment_location
+r.rotation, t.training_unit
 FROM soldier s
 LEFT JOIN medicalreport m ON s.soldier_id = m.soldier_id
 LEFT JOIN rotation r ON s.rotation_id = r.rotation_id
 LEFT JOIN training t ON s.training_unit_id = t.training_unit_id
-LEFT JOIN medicalreportapproval ma ON m.medical_report_id = ma.medical_report_id
-WHERE m.medical_report_id IS NOT NULL AND s.training_unit_id = ?";
-if ($selected_status) {
-    $query .= " AND m.status = ?";
-}
+WHERE m.medical_report_id IS NOT NULL AND s.training_unit_id = ? AND m.status = 'pending'
+LIMIT ?, ?";
 
 $stmt = mysqli_prepare($link, $query);
-
-
-if ($selected_status) {
-    mysqli_stmt_bind_param($stmt, "is", $training_unit_id, $selected_status);
-} else {
-    mysqli_stmt_bind_param($stmt, "i", $training_unit_id);
-}
-
-
+mysqli_stmt_bind_param($stmt, "iii", $training_unit_id, $offset, $records_per_page);
 
 if (!$stmt) {
     die('SQL prepare failed: ' . mysqli_error($link));
@@ -58,20 +42,32 @@ if (!$stmt) {
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 
-if (!$result) {
-    die('Query failed: ' . mysqli_error($link));
-}
-
 $soldiers = [];
 while ($row = mysqli_fetch_assoc($result)) {
+    $row['status'] = ($row['status'] === 'pending') ? 'ยังไม่ได้นัดหมาย' : $row['status'];
     $soldiers[] = $row;
 }
 
 mysqli_stmt_close($stmt);
 
+// Query to get the total number of 'pending' records
+$total_query = "SELECT COUNT(*) as total FROM soldier s
+LEFT JOIN medicalreport m ON s.soldier_id = m.soldier_id
+WHERE m.medical_report_id IS NOT NULL AND s.training_unit_id = ? AND m.status = 'pending'";
+
+$total_stmt = mysqli_prepare($link, $total_query);
+mysqli_stmt_bind_param($total_stmt, "i", $training_unit_id);
+mysqli_stmt_execute($total_stmt);
+$total_result = mysqli_stmt_get_result($total_stmt);
+$total_row = mysqli_fetch_assoc($total_result);
+$total_records = $total_row['total'];
+$total_pages = ceil($total_records / $records_per_page);
+
+mysqli_stmt_close($total_stmt);
+
 // Process bulk send if form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_all'])) {
-    $query_all = "SELECT medical_report_id FROM medicalreport WHERE status NOT IN ('sent', 'approved')";
+    $query_all = "SELECT medical_report_id FROM medicalreport WHERE status = 'pending'";
     $result_all = mysqli_query($link, $query_all);
 
     if ($result_all && mysqli_num_rows($result_all) > 0) {
@@ -80,26 +76,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_all'])) {
             sendToHospital($medical_report_id);
         }
         echo "<script>
-            document.addEventListener('DOMContentLoaded', function () {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'สำเร็จ',
-                    text: 'ข้อมูลทั้งหมดถูกส่งไปรพ.แล้ว!',
-                    confirmButtonText: 'ตกลง'
-                }).then(() => {
-                    window.location.reload();
-                });
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: 'ข้อมูลทั้งหมดถูกส่งไปรพ.แล้ว!',
+                confirmButtonText: 'ตกลง'
+            }).then(() => {
+                window.location.reload();
             });
         </script>";
     } else {
         echo "<script>
-            document.addEventListener('DOMContentLoaded', function () {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'ไม่มีข้อมูล',
-                    text: 'ไม่มีข้อมูลที่ต้องส่ง',
-                    confirmButtonText: 'ตกลง'
-                });
+            Swal.fire({
+                icon: 'info',
+                title: 'ไม่มีข้อมูล',
+                text: 'ไม่มีข้อมูลที่ต้องส่ง',
+                confirmButtonText: 'ตกลง'
             });
         </script>";
     }
@@ -142,6 +134,10 @@ function sendToHospital($medical_report_id)
     mysqli_stmt_close($update_stmt);
 }
 ?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="th">
 
@@ -263,28 +259,30 @@ function sendToHospital($medical_report_id)
                                             <div class="col-sm-6">
                                                 <form method="GET" action="" class="float-right">
                                                     <div class="input-group">
-                                                        <select id="status_filter" name="status_filter"
-                                                            class="form-control">
-                                                            <option value="" <?php echo $selected_status === '' ? 'selected' : ''; ?>>ทั้งหมด</option>
-                                                            <option value="pending" <?php echo $selected_status === 'pending' ? 'selected' : ''; ?>>
-                                                                ยังไม่ได้นัดหมาย</option>
-                                                            <option value="approved" <?php echo $selected_status === 'approved' ? 'selected' : ''; ?>>
-                                                                นัดหมายแล้ว</option>
-                                                            <option value="sent" <?php echo $selected_status === 'sent' ? 'selected' : ''; ?>>รอนัดหมาย</option>
-                                                        </select>
-                                                        <div class="input-group-append">
-                                                            <button class="btn btn-secondary"
-                                                                type="submit">กรอง</button>
+
+
+                                                        <!-- ปุ่มค้นหา -->
+                                                        <div class="input-group-append mr-2">
+
                                                         </div>
+                                                        <!-- จำนวนรายการต่อหน้า -->
+                                                        <select name="records_per_page" class="form-control"
+                                                            onchange="this.form.submit()">
+                                                            <option value="10" <?= $records_per_page == 10 ? 'selected' : ''; ?>>แสดงผล 10</option>
+                                                            <option value="20" <?= $records_per_page == 20 ? 'selected' : ''; ?>>แสดงผล 20</option>
+                                                            <option value="30" <?= $records_per_page == 30 ? 'selected' : ''; ?>>แสดงผล 30</option>
+                                                            <option value="40" <?= $records_per_page == 40 ? 'selected' : ''; ?>>แสดงผล 40</option>
+                                                        </select>
                                                     </div>
                                                 </form>
                                             </div>
+
                                         </div>
                                     </div>
                                     <table class="table table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>#</th>
+                                                <th>ลำดับ</th>
                                                 <th>ชื่อ</th>
                                                 <th>หน่วยฝึกต้นสังกัด</th>
                                                 <th>รหัสหมุนเวียน</th>
@@ -310,14 +308,7 @@ function sendToHospital($medical_report_id)
                                                             $status = $soldier['status'];
                                                             echo $status_mapping[$status] ?? $status;
 
-                                                            if ($status === 'approved') {
-                                                                $appointment_date = $soldier['appointment_date'];
-                                                                $appointment_location = $soldier['appointment_location'];
-                                                                $appointment_time = date('H:i', strtotime($appointment_date));
-                                                                echo "<br><strong>วันที่:</strong> " . date('d-m-Y', strtotime($appointment_date));
-                                                                echo "<br><strong>เวลา:</strong> " . $appointment_time;
-                                                                echo "<br><strong>สถานที่:</strong> " . $appointment_location;
-                                                            }
+
                                                             ?>
                                                         </td>
 
@@ -332,13 +323,49 @@ function sendToHospital($medical_report_id)
                                         </tbody>
                                     </table>
                                     <div class="clearfix">
-                                        <form method="POST" action="">
-                                            <button type="submit" name="send_all"
-                                                class="btn btn-success float-left">ส่งข้อมูลทั้งหมดไปรพ.</button>
-                                        </form>
-                                        <a href="insert_medicalreport.php"
-                                            class="btn btn-primary float-right">เพิ่มรายงานป่วย</a>
+                                        <div class="d-flex justify-content-between w-100">
+                                            <!-- Left: Send All Button -->
+                                            <form method="POST" action="">
+                                                <button type="submit" name="send_all"
+                                                    class="btn btn-success">ส่งข้อมูลทั้งหมดไปรพ.</button>
+                                            </form>
+
+                                            <!-- Center: Pagination -->
+                                            <div class="pagination-wrapper d-flex justify-content-center">
+                                                <ul class="pagination mb-0">
+                                                    <!-- Previous Button -->
+                                                    <li class="page-item <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                                                        <a class="page-link"
+                                                            href="?page=<?= $page - 1; ?>&records_per_page=<?= $records_per_page; ?>&status_filter=<?= $selected_status; ?>">
+                                                            <i class="fas fa-arrow-left"></i> <!-- ไอคอนลูกศร -->
+                                                        </a>
+                                                    </li>
+
+                                                    <!-- Page Numbers -->
+                                                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                                        <li class="page-item <?= ($i == $page) ? 'active' : ''; ?>">
+                                                            <a class="page-link"
+                                                                href="?page=<?= $i; ?>&records_per_page=<?= $records_per_page; ?>&status_filter=<?= $selected_status; ?>"><?= $i; ?></a>
+                                                        </li>
+                                                    <?php endfor; ?>
+
+                                                    <!-- Next Button with Icon -->
+                                                    <li
+                                                        class="page-item <?= ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                                                        <a class="page-link"
+                                                            href="?page=<?= $page + 1; ?>&records_per_page=<?= $records_per_page; ?>&status_filter=<?= $selected_status; ?>">
+                                                            <i class="fas fa-arrow-right"></i> <!-- ไอคอนลูกศร -->
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <!-- Right: Add Report Button -->
+                                            <a href="insert_medicalreport.php"
+                                                class="btn btn-primary">เพิ่มรายงานป่วย</a>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>

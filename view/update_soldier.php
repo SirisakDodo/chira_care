@@ -39,7 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // เตรียมคำสั่ง SQL
     $stmt = mysqli_prepare($link, $sqlUpdate);
-    mysqli_stmt_bind_param($stmt, "ssiiissssssss",
+    mysqli_stmt_bind_param(
+        $stmt,
+        "sssiissssssi",
         $firstName,
         $lastName,
         $rotationId,
@@ -52,7 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $selectionMethod,
         $serviceDuration,
         $soldierImage,  // อัปเดตภาพ
-        $soldierId);  // ใช้ soldier_id_card ที่ส่งมาในฟอร์ม
+        $soldierId
+    );  // ใช้ soldier_id_card ที่ส่งมาในฟอร์ม
 
     // ดำเนินการคำสั่ง SQL
     if (mysqli_stmt_execute($stmt)) {
