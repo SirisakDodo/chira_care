@@ -27,7 +27,6 @@ if ($status_filter) {
     $status_condition = "AND m.status = ?";
 }
 
-// คำสั่ง SQL สำหรับดึงข้อมูลทหารและรายงานอาการ
 $query = "SELECT s.soldier_id, s.soldier_id_card, s.first_name, s.last_name,
                  s.rotation_id, s.training_unit_id, s.affiliated_unit,
                  m.medical_report_id, m.symptom_description, m.status,
@@ -40,8 +39,10 @@ $query = "SELECT s.soldier_id, s.soldier_id_card, s.first_name, s.last_name,
           LEFT JOIN medicalreportapproval a ON m.medical_report_id = a.medical_report_id
           WHERE m.medical_report_id IS NOT NULL
           AND s.training_unit_id = ?
+          AND m.status IN ('sent', 'approved')
           $status_condition
           LIMIT ?, ?";
+
 
 $stmt = mysqli_prepare($link, $query);
 if (!$stmt) {

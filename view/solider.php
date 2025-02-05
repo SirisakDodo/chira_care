@@ -14,8 +14,12 @@ $totalRow = mysqli_fetch_assoc($totalResult);
 $totalRecords = $totalRow['total'];
 $totalPages = ceil($totalRecords / $recordsPerPage);
 
-// คำสั่ง SQL เพื่อดึงข้อมูล
-$sql = "SELECT
+// ตรวจสอบค่าที่กรองจากฟอร์ม
+$rotation_filter = isset($_GET['rotation']) ? $_GET['rotation'] : '';
+$training_unit_filter = isset($_GET['training_unit']) ? $_GET['training_unit'] : '';
+
+// คำสั่ง SQL เริ่มต้นสำหรับการดึงข้อมูล
+$query = "SELECT
             s.soldier_id_card,
             s.first_name,
             s.last_name,
@@ -28,16 +32,27 @@ $sql = "SELECT
             Rotation r ON s.rotation_id = r.rotation_id
         INNER JOIN
             Training t ON s.training_unit_id = t.training_unit_id
-        LIMIT $startFrom, $recordsPerPage";
+        WHERE 1=1";  // ใช้ WHERE 1=1 เพื่อรองรับการเพิ่มเงื่อนไข
 
-$result = mysqli_query($link, $sql);
+// เพิ่มเงื่อนไขตามค่าที่กรอง
+if ($rotation_filter) {
+    $query .= " AND r.rotation_id = '$rotation_filter'";
+}
+
+if ($training_unit_filter) {
+    $query .= " AND t.training_unit_id = '$training_unit_filter'";
+}
+
+// เพิ่มเงื่อนไขการแบ่งหน้า
+$query .= " LIMIT $startFrom, $recordsPerPage";
+
+$result = mysqli_query($link, $query);
 
 // ตรวจสอบผลลัพธ์
 if (!$result) {
     die("Query failed: " . mysqli_error($link));
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="th">
 
@@ -178,6 +193,30 @@ if (!$result) {
                                         </div>
                                         <div class="col-sm-6 text-right">
                                             <form method="get" class="d-inline">
+                                                <select name="rotation" class="form-control d-inline-block w-auto"
+                                                    onchange="this.form.submit()">
+                                                    <option value="">เลือกผลัด</option>
+                                                    <?php
+                                                    $rotation_query = "SELECT * FROM rotation";
+                                                    $rotation_result = mysqli_query($link, $rotation_query);
+                                                    while ($rotation = mysqli_fetch_assoc($rotation_result)) {
+                                                        echo "<option value='{$rotation['rotation_id']}'" . ($rotation['rotation_id'] == $rotation_filter ? ' selected' : '') . ">{$rotation['rotation']}</option>";
+                                                    }
+                                                    ?>
+                                                </select>
+
+                                                <!-- เลือกหน่วยฝึก -->
+                                                <select name="training_unit" class="form-control d-inline-block w-auto"
+                                                    onchange="this.form.submit()">
+                                                    <option value="">เลือกหน่วยฝึก</option>
+                                                    <?php
+                                                    $training_query = "SELECT * FROM training";
+                                                    $training_result = mysqli_query($link, $training_query);
+                                                    while ($training = mysqli_fetch_assoc($training_result)) {
+                                                        echo "<option value='{$training['training_unit_id']}'" . ($training['training_unit_id'] == $training_unit_filter ? ' selected' : '') . ">{$training['training_unit']}</option>";
+                                                    }
+                                                    ?>
+                                                </select>
                                                 <select name="records" class="form-control w-auto d-inline"
                                                     onchange="this.form.submit()">
                                                     <option value="10" <?= $recordsPerPage == 10 ? 'selected' : '' ?>>แสดง
